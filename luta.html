@@ -45,16 +45,17 @@ h1{font-family:"Press Start 2P",monospace;font-size:clamp(24px,6.5vw,56px);text-
 .lad div{background:#24163a;border:3px solid #47306b;padding:8px 10px;text-align:center;min-width:120px}
 .lad div.on{border-color:var(--y)}.lad div.ok{border-color:var(--g);opacity:.7}
 .lad b{display:block;font-family:"Press Start 2P",monospace;font-size:9px;margin-bottom:4px}
+#voltarG{position:fixed;left:6px;top:6px;z-index:40;font-family:"Press Start 2P",monospace;font-size:9px;background:#33224d;color:#fff;border:3px solid #fff;box-shadow:3px 3px 0 #000;padding:7px 9px;cursor:pointer}
 </style>
 </head>
 <body>
 <section id="sTitle" class="scr on">
  <h1>PCPE<br>FIGHTER</h1>
- <p class="sub">Cada golpe é uma questão. <b style="color:var(--g)">Acertou, você bate.</b> <b style="color:#ff8a8a">Errou, você apanha.</b><br>Derrote 3 bandidos e enfrente o <b style="color:var(--y)">CHEFÃO</b>. Acerte a última pergunta de cada luta para soltar o <b style="color:var(--y)">GOLPE ESPECIAL</b>!</p>
- <p class="sub">Você só perde a luta se errar todas as perguntas dela.</p>
+ <p class="sub">Cada golpe é uma questão. <b style="color:var(--g)">Acertou, você bate.</b> <b style="color:#ff8a8a">Errou, você apanha.</b><br>Derrote 3 bandidos e enfrente o <b style="color:var(--y)">CHEFÃO</b>. O acerto que fecha a luta solta o <b style="color:var(--y)">GOLPE ESPECIAL</b>!</p>
+ <p class="sub">Vence quem acertar primeiro: <b style="color:var(--g)">3 acertos derrubam o bandido</b> (o CHEFÃO precisa de 4). Mas <b style="color:#ff8a8a">3 erros e é você que vai à lona</b>!</p>
  <p class="sub" id="ola" style="color:var(--y)"></p>
  <div class="row"><button class="btn" id="go">▶ LUTAR</button><button class="btn ghost" id="esc">ESCOLHER MATÉRIA</button><button class="btn ghost" id="snd">SOM: ON</button></div>
- <p class="tiny">PC: A–E respondem · ENTER continua · M som</p>
+ <p class="tiny">Responda clicando ou tocando na alternativa · M: som</p>
  <a class="lnk" href="index.html">◀ voltar aos jogos</a>
 </section>
 <section id="sTema" class="scr">
@@ -69,6 +70,7 @@ h1{font-family:"Press Start 2P",monospace;font-size:clamp(24px,6.5vw,56px);text-
  <div class="box" id="qbox"></div>
 </section>
 <section id="sEnd" class="scr"></section>
+<button id="voltarG">◀ VOLTAR</button>
 <script>
 /* BANCO UNIFICADO · Detetive PCPE (gerado de casos.js, Kit, Rumo ao Milhão e port_textos.js) */
 const TXT={"t1":"<b>Texto 1</b><br>(1) A investigação criminal moderna não se resume à busca por um culpado. (2) Ela é, antes de tudo, um esforço metódico para reconstruir os fatos a partir de vestígios, depoimentos e registros. (3) Por isso, o investigador precisa desconfiar das próprias certezas: uma hipótese sedutora, se não for testada, pode desviar todo o trabalho. (4) Nos últimos anos, câmeras, celulares e bancos de dados ampliaram muito as fontes de prova; contudo, a tecnologia não substitui o raciocínio. (5) Um dado isolado nada diz; é a sua relação com os demais que lhe confere sentido.","t2":"<b>Texto 2</b><br>(1) Em muitas cidades do interior, a delegacia é o primeiro lugar a que a população recorre quando algo dá errado. (2) Chegam ali brigas de vizinhos, golpes por telefone, desaparecimentos e, às vezes, simples pedidos de orientação. (3) Embora nem tudo seja caso de polícia, o atendimento atencioso costuma evitar que pequenos conflitos se transformem em crimes. (4) Os servidores que trabalham nessas unidades sabem que a confiança da comunidade se constrói devagar, mas pode ser perdida em um único dia.","t3":"<b>Texto 3</b><br>(1) Os golpes virtuais cresceram de forma alarmante, sobretudo entre idosos. (2) Os criminosos exploram a pressa e a emoção das vítimas: alegam emergências, imitam parentes e prometem prêmios inexistentes. (3) Especialistas recomendam que, diante de qualquer pedido de dinheiro, a pessoa interrompa a conversa e confirme a informação por outro meio. (4) Trata-se de uma medida simples, mas que exige disciplina, visto que o golpista conta justamente com a reação impulsiva.","t4":"<b>Texto 4</b><br>(1) Ler um laudo pericial exige atenção a detalhes que, à primeira vista, parecem irrelevantes. (2) Uma marca de pneu, a posição de um objeto ou o horário de uma mensagem podem confirmar — ou desmentir — a versão apresentada por uma testemunha. (3) O perito descreve o que encontrou; cabe à autoridade, porém, interpretar esses dados em conjunto com as demais provas. (4) Daí a importância de que policiais e peritos dialoguem, sem que um invada a atribuição do outro."};
@@ -165,46 +167,48 @@ $("#go").onclick=()=>iniciar("misto");
 $("#esc").onclick=()=>{ac();$("#temas").innerHTML=temasHTML(st).replace(/recorde (\d+)/g,"recorde $1 vitória(s)");go("sTema")};
 $("#temas").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;iniciar(b.dataset.t)};
 function iniciar(tema){ac();G={tema,qs:sortear(tema,40,st),qi:0,luta:0,ac:0,tot:0,riv:RIVAIS[0]};novaLuta()}
-function novaLuta(){G.riv=RIVAIS[G.luta];G.n=0;G.acL=0;P={x:118,pose:"idle",t:0,hp:100};E={x:202,pose:"idle",t:0,hp:100};proj=null;fx=[];hpBar();
+function novaLuta(){G.riv=RIVAIS[G.luta];G.n=0;G.acL=0;G.erL=0;G.need=G.riv.boss?4:3;P={x:118,pose:"idle",t:0,hp:100};E={x:202,pose:"idle",t:0,hp:100};proj=null;fx=[];hpBar();
  $("#nP").textContent=NOME.toUpperCase();$("#nE").textContent=G.riv.nome;$("#round").textContent=G.riv.boss?"⚠ BOSS ⚠":`LUTA ${G.luta+1}/4`;
  go("sGame");cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
  banner(G.riv.boss?"O CHEFÃO CHEGOU!":"LUTA "+(G.luta+1),1500);setTimeout(()=>{banner("FIGHT!",900);SFX.fight();pergunta()},1500);
- $("#qbox").innerHTML=`<p class="sub" style="max-width:none">${G.riv.boss?"O chefe da quadrilha quer briga. Acerte a última pergunta para o GOLPE ESPECIAL!":"Prepare-se..."}</p>`}
-function pergunta(){answered=false;let q=G.qs[G.qi];if(!q){G.qs=G.qs.concat(sortear(G.tema,20,st));q=G.qs[G.qi]}G.q=q;const ult=G.n===4;
- $("#qbox").innerHTML=`<div class="qtop"><span>${ult?"⚡ PERGUNTA FINAL · VALE O GOLPE ESPECIAL":"GOLPE "+(G.n+1)+"/5"}</span><span>${TEMAS[q.d].ic} ${TEMAS[q.d].nome.toUpperCase()}</span></div>`+contexto(q)+`<div class="enun">${q.q}</div>`+
+ $("#qbox").innerHTML=`<p class="sub" style="max-width:none">${G.riv.boss?"O chefe da quadrilha quer briga. Ele aguenta 4 golpes: acerte 4 antes de errar 3!":"Prepare-se..."}</p>`}
+function pergunta(){answered=false;let q=G.qs[G.qi];if(!q){G.qs=G.qs.concat(sortear(G.tema,20,st));q=G.qs[G.qi]}G.q=q;const ult=G.acL===G.need-1;
+ $("#qbox").innerHTML=`<div class="qtop"><span>${ult?"⚡ ACERTE E SOLTE O GOLPE ESPECIAL":"GOLPE "+(G.n+1)} · ✔ ${G.acL}/${G.need} · ✘ ${G.erL}/3</span><span>${TEMAS[q.d].ic} ${TEMAS[q.d].nome.toUpperCase()}</span></div>`+contexto(q)+`<div class="enun">${q.q}</div>`+
  q.o.map((t,k)=>`<button class="opt" data-k="${k}"><span class="L">${L[k]}</span><span>${t}</span></button>`).join("")+`<div class="res" id="res"></div><div class="row" id="bt" style="margin-top:10px"><button class="btn red" id="des">🏳️ DESISTIR</button></div>`;
  $("#des").onclick=desistir}
 function desistir(){const b=$("#des");if(!b.dataset.arm){b.dataset.arm=1;b.textContent="CERTEZA? TOQUE DE NOVO";return}cancelAnimationFrame(raf);go("sTitle")}
 $("#qbox").onclick=e=>{const b=e.target.closest(".opt");if(b&&!answered&&!b.disabled)responder(+b.dataset.k)};
-function responder(k){answered=true;const q=G.q,ok=k===q.c,ult=G.n===4;marcarVista(q,st);G.qi++;G.n++;G.tot++;
+function responder(k){answered=true;const q=G.q,ok=k===q.c;marcarVista(q,st);G.qi++;G.n++;G.tot++;
  document.querySelectorAll(".opt").forEach(o=>{o.disabled=true;const j=+o.dataset.k;if(j===q.c)o.classList.add("ok");else if(j===k)o.classList.add("bad")});
  let txt;
- if(ok){G.ac++;G.acL++;if(ult){P.pose="esp";P.t=0;SFX.special();banner("GOLPE ESPECIAL!",1600);setTimeout(()=>proj={x:P.x+16},500);txt="⚡ GOLPE ESPECIAL: RAIO DA JUSTIÇA!"}
-  else{golpe(P,E,G.n%2?"soco":"chute");E.hp-=18;txt="ACERTOU! VOCÊ ACERTOU O GOLPE"}}
- else{golpe(E,P,G.n%2?"chute":"soco");P.hp-=20;txt=ult?"ERROU! ELE DEFENDEU O ÚLTIMO ATAQUE":"ERROU! VOCÊ LEVOU O GOLPE"}
+ if(ok){G.ac++;G.acL++;
+  if(G.acL>=G.need){P.pose="esp";P.t=0;SFX.special();banner("GOLPE ESPECIAL!",1600);setTimeout(()=>proj={x:P.x+16},500);txt="⚡ GOLPE ESPECIAL: RAIO DA JUSTIÇA!"}
+  else{golpe(P,E,G.n%2?"soco":"chute");E.hp=100-G.acL*(100/G.need);txt="ACERTOU! VOCÊ ACERTOU O GOLPE"}}
+ else{G.erL++;golpe(E,P,G.n%2?"chute":"soco");P.hp=100-G.erL*34;txt=G.erL>=3?"ERROU! VOCÊ FOI NOCAUTEADO":"ERROU! VOCÊ LEVOU O GOLPE"}
  setTimeout(hpBar,160);
- const perdeu=G.acL===0&&G.n>=5,acabou=G.n>=5;
- if(perdeu)setTimeout(()=>{P.pose="ko";P.t=0;SFX.ko();banner("K.O.",2000)},500);
- else if(acabou&&!ok)setTimeout(()=>{E.pose="dor";banner("VITÓRIA POR PONTOS",2000)},700);
+ const perdeu=G.erL>=3,acabou=G.acL>=G.need;
+ if(perdeu)setTimeout(()=>{P.hp=0;hpBar();P.pose="ko";P.t=0;E.pose="vit";E.t=0;SFX.ko();banner("K.O.",2000)},500);
  $("#res").innerHTML=`<div class="stamp" style="color:${ok?"var(--g)":"#ff8a8a"}">${txt}</div>${explicacao(q,k)}`;
  $("#bt").innerHTML=`<button class="btn" id="nx">${perdeu?"VER RESULTADO ▶":acabou?"FIM DA LUTA ▶":"PRÓXIMO GOLPE ▶"}</button><button class="btn red" id="des">🏳️ DESISTIR</button>`;$("#des").onclick=desistir;
  $("#nx").onclick=()=>{if(perdeu){fim(false);return}if(acabou){vitoria();return}scrollTo(0,0);pergunta()}}
 function vitoria(){P.pose="vit";P.t=0;if(E.pose!=="ko"){E.pose="ko";E.t=0}SFX.win();banner(G.riv.boss?"CHEFÃO PRESO!":"VOCÊ VENCEU!",2500);
  const rk="rec_"+G.tema;
  if(G.riv.boss){const v=st.get(rk,0)+1;st.set(rk,v);setTimeout(()=>fim(true),2200);return}
- $("#qbox").innerHTML=`<div class="stamp" style="color:var(--g)">${G.riv.nome} FOI ALGEMADO! 🚔</div><p style="text-align:center">Acertos nesta luta: ${G.acL}/5</p>${escada(G.luta+1)}<div class="row"><button class="btn" id="nx">PRÓXIMA LUTA ▶</button><button class="btn red" id="des">🏳️ DESISTIR</button></div>`;
+ $("#qbox").innerHTML=`<div class="stamp" style="color:var(--g)">${G.riv.nome} FOI ALGEMADO! 🚔</div><p style="text-align:center">Placar da luta: ${G.acL} acertos × ${G.erL} erros</p>${escada(G.luta+1)}<div class="row"><button class="btn" id="nx">PRÓXIMA LUTA ▶</button><button class="btn red" id="des">🏳️ DESISTIR</button></div>`;
  $("#des").onclick=desistir;$("#nx").onclick=()=>{G.luta++;novaLuta()}}
 function escada(at){return `<div class="lad">${RIVAIS.map((r,i)=>`<div class="${i<at?"ok":i===at?"on":""}"><b>${r.boss?"BOSS":"LUTA "+(i+1)}</b>${r.nome}${i<at?" ✔":""}</div>`).join("")}</div>`}
 function fim(venceu){cancelAnimationFrame(raf);
- $("#sEnd").innerHTML=`<h1>${venceu?"CAMPEÃO!":"NOCAUTE..."}</h1><p class="sub">${venceu?`${NOME}, você derrotou a quadrilha inteira e prendeu O CHEFÃO! 🏆`:`${NOME}, você errou todas as perguntas desta luta. Revise as explicações e volte para a revanche!`}</p>
+ $("#sEnd").innerHTML=`<h1>${venceu?"CAMPEÃO!":"NOCAUTE..."}</h1><p class="sub">${venceu?`${NOME}, você derrotou a quadrilha inteira e prendeu O CHEFÃO! 🏆`:`${NOME}, ${G.riv.nome} te nocauteou: foram 3 erros antes de ${G.need} acertos. Revise as explicações e volte para a revanche!`}</p>
  <div class="box" style="text-align:center;max-width:520px;font-size:24px">Acertos: <b style="color:var(--y)">${G.ac}</b> de ${G.tot}<br>${escada(venceu?4:G.luta)}</div>
  <div class="row">${venceu?"":`<button class="btn" id="rev">REVANCHE</button>`}<button class="btn ${venceu?"":"ghost"}" id="again">NOVO TORNEIO</button></div><a class="lnk" href="index.html">◀ voltar aos jogos</a>`;
  go("sEnd");if(!venceu)SFX.ko();
  if($("#rev"))$("#rev").onclick=()=>novaLuta();$("#again").onclick=()=>iniciar(G.tema)}
 document.addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(k==="m"){setSnd(!SND.on);return}
- if(!$("#sGame").classList.contains("on"))return;const i="abcde".indexOf(k);
- if(i>=0&&k.length===1&&!answered&&document.querySelector(".opt")){responder(i);return}
- if((k==="enter"||k===" ")&&$("#nx")){e.preventDefault();$("#nx").click()}});
+});
+$("#voltarG").onclick=function(){const on=id=>$("#"+id).classList.contains("on");
+ if(on("sTitle")){location.href="index.html";return}
+ if(on("sGame")){if(!this.dataset.arm){this.dataset.arm=1;this.textContent="SAIR DA LUTA?";setTimeout(()=>{this.dataset.arm="";this.textContent="◀ VOLTAR"},2500);return}this.dataset.arm="";this.textContent="◀ VOLTAR";cancelAnimationFrame(raf)}
+ go("sTitle")};
 </script>
 </body>
 </html>

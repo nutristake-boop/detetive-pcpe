@@ -171,6 +171,9 @@ body:not(.pc) .fsb,body:not(.pc) #hFs{display:none !important}
 .curio .ok{color:var(--g);font-family:"Press Start 2P",monospace;font-size:11px}
 .curio .no{color:#ff9d5c;font-family:"Press Start 2P",monospace;font-size:11px}
 body.mob .curio .per{font-size:22px}body.mob .curio .exp,body.mob .curio .prova{font-size:19px}
+
+@media (orientation:portrait){body.mob #voltarG{top:auto;bottom:8px}}
+#voltarG{position:fixed;left:6px;top:6px;z-index:60;font-family:"Press Start 2P",monospace;font-size:9px;background:#2a2050;color:#fff;border:3px solid #fff;box-shadow:3px 3px 0 #000;padding:7px 9px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -178,7 +181,7 @@ body.mob .curio .per{font-size:22px}body.mob .curio .exp,body.mob .curio .prova{
 <!-- TÍTULO -->
 <section id="sTitle" class="scr on">
  <h1 class="title px">DETETIVE<br>PCPE</h1>
- <p class="sub">Investigue cada fase: cada pista ❗ traz uma dica, e a cada 3 dicas vem uma questão no estilo da prova.</p>
+ <p class="sub">Investigue: junte as pistas ❗ com dicas e responda ao delegado. Em Português, cada pista é uma questão.</p>
  <canvas id="logo" width="96" height="48" style="width:288px;image-rendering:pixelated"></canvas>
  <div class="win" style="max-width:560px;text-align:center">
   <div class="px tiny" style="margin-bottom:8px;color:var(--y)">NOME DO AGENTE</div>
@@ -237,6 +240,7 @@ body.mob .curio .per{font-size:22px}body.mob .curio .exp,body.mob .curio .prova{
 <section id="sEnd" class="scr"></section>
 </div>
 <div id="toast"></div>
+<button id="voltarG">◀ VOLTAR</button>
 <button class="btn ghost px fsb" id="fsBtn">⛶ TELA CHEIA (F)</button>
 <script>
 /* BANCO UNIFICADO · Detetive PCPE (gerado de casos.js, Kit, Rumo ao Milhão e port_textos.js) */
@@ -403,7 +407,7 @@ const FASES={};
 (function montar(){
  for(const d in TEMAS){
   const r=seeded(1234+d.length*97+d.charCodeAt(0));
-  let qs=Q.filter(q=>q.d===d);
+  let qs=Q.filter(q=>q.d===d&&(d==="port"||q.src==="caso"||q.src==="kit"));
   const fases=[];
   if(d==="port"){
    // fases com texto: as 5 questões do mesmo texto juntas
@@ -440,10 +444,10 @@ $("#sndBtn").onclick=()=>{setSnd(!SND.on);if(SND.on)SFX.sel()};
 $("#hMute").onclick=()=>{setSnd(!SND.on);if(SND.on)musicStart()};
 $("#howBtn").onclick=()=>{go("sEnd");$("#sEnd").innerHTML=`<div class="big">COMO JOGAR</div><div class="win" style="font-size:23px;line-height:1.25">
 1. Escolha a matéria. Cada matéria tem várias <b style="color:var(--y)">fases</b>, da mais fácil para a mais difícil. Vencer uma fase libera a próxima.<br>
-2. Cada fase tem <b style="color:var(--y)">5 perguntas ou mais</b>. Para cada pergunta há <b>3 pistas ❗</b> no mapa.<br>
-3. Encoste na pista e aperte <b>A</b>: ela mostra uma <b>dica</b>. Depois da 3ª dica, vem a questão no estilo da prova (A a E). A 3ª dica pode até eliminar uma alternativa errada!<br>
+2. Cada fase tem <b style="color:var(--y)">5 perguntas ou mais</b>. Para cada pergunta há <b>3 pistas ❗</b> no mapa, e cada pista traz uma <b>dica</b> sobre o caso.<br>
+3. Encoste na pista e aperte <b>A</b>. Com as 3 dicas, vá falar com o <b>delegado</b>: ele faz a pergunta (responda clicando na alternativa).<br>
 4. Errou: perde 1 ❤️ e vê a resposta certa com a explicação. Com 0 ❤️ a fase é perdida (dá para tentar de novo).<br>
-5. Com todas as pistas resolvidas, fale com o <b>delegado</b> (em Português, com a <b>professora</b>) para fechar a fase.<br>
+5. Em <b>Português</b> é diferente: a aula é na sala, cada pista ❗ já é uma pergunta e, nas fases de texto, mostra um trecho. No fim, fale com a <b>professora</b>.<br>
 6. ⭐⭐⭐ = 5 acertos · ⭐⭐ = 4 · ⭐ = 3 ou menos.<br>
 7. 🔍 Lupa: elimina 2 alternativas erradas (1 por fase).<br>
 8. Em Português, nas fases de texto, cada pista mostra um trecho do texto.<br>
@@ -477,7 +481,7 @@ function startFase(d,n,mistoFase){
  $("#inNum").textContent=G.misto?`🎲 MISTO · FASE ${G.mistoN+1}`:`${TEMAS[d].ic} ${TEMAS[d].nome.toUpperCase()} · FASE ${n}/${FASES[d].length}`;
  $("#inTit").textContent=f.nome.toUpperCase();
  const prof=f.cena==="escola";
- $("#inTxt").innerHTML=`${G.nome}, ${prof?"hoje a aula é na sala de aula!":"temos uma ocorrência!"}<br>São <b style="color:var(--y)">${f.qs.length} perguntas</b>. Para cada uma, ache <b>3 pistas ❗</b>: cada pista é uma <b>dica</b>${f.tx?" (um trecho do texto)":""}. Com as 3 dicas, vem a pergunta.<br>❤️ x3 · 🔍 x1`;
+ $("#inTxt").innerHTML=`${G.nome}, ${prof?"hoje a aula é na sala de aula!":"temos uma ocorrência!"}<br>${prof?`Há <b style="color:var(--y)">${f.qs.length} pistas ❗</b> na sala: cada pista é uma pergunta${f.tx?" e mostra um <b>trecho do texto</b>":""}.`:`São <b style="color:var(--y)">${f.qs.length} perguntas</b>. Para cada uma, ache <b>3 pistas ❗</b> com <b>dicas</b> e depois fale com o delegado para responder.`}<br>❤️ x3 · 🔍 x1`;
  go("sIntro");SFX.open();
 }
 $("#inGo").onclick=()=>startScene();
@@ -485,7 +489,7 @@ $("#inGo").onclick=()=>startScene();
 /* ---------------- MISTO (arcade) ---------------- */
 function startMisto(){G.mistoN=0;G.mistoPts=0;nextMisto()}
 function nextMisto(){const seen=st.get("seenQ",{});const lvMax=1.5+Math.min(2.5,G.mistoN*.35);
- let pool=shuf(Q.filter(q=>q.lv<=lvMax+.5&&!q.tx)).sort((a,b)=>(seen[a.id]||0)-(seen[b.id]||0)).slice(0,40);
+ let pool=shuf(Q.filter(q=>q.lv<=lvMax+.5&&!q.tx&&q.d!=="port"&&(q.src==="caso"||q.src==="kit"))).sort((a,b)=>(seen[a.id]||0)-(seen[b.id]||0)).slice(0,40);
  const qs=[];const used=new Set();for(const q of shuf(pool)){if(qs.length<5&&!used.has(q.d)){qs.push(q);used.add(q.d)}}
  while(qs.length<5)qs.push(pool.find(q=>!qs.includes(q)));
  qs.sort((a,b)=>a.lv-b.lv);const now=Date.now();qs.forEach(q=>seen[q.id]=now);st.set("seenQ",seen);
@@ -506,23 +510,26 @@ function startScene(){const f=G.fase;const m=MAPS[f.cena]||MAPS.delegacia;G.map=
  G.partes=f.tx?partesTexto(f.tx):null;G.dicaTxt=[];
  G.got=0;G.busy=false;G.path=[];spawnClues();go("sGame");musicStart();
  const prof=f.cena==="escola";
- showDialog(prof?"Professora":"Delegado",`${prof?"Bem-vindo à aula":f.nome+"."} ${G.nome}, esta fase tem ${NQ()} perguntas. Para cada uma, ache as 3 pistas ❗: cada pista traz uma DICA${f.tx?" (um trecho do texto)":""}. Juntou as 3, vem a pergunta. No fim, venha falar comigo.`);
+ showDialog(prof?"Professora":"Delegado",prof?`Bem-vindo à aula, ${G.nome}! Há ${NQ()} pistas ❗ na sala. Cada pista é uma pergunta${f.tx?" e revela um trecho do texto":""}. Depois venha falar comigo.`:`${f.nome}. ${G.nome}, ache as 3 pistas ❗: cada uma traz uma DICA. Depois venha falar comigo para responder a pergunta. São ${NQ()} perguntas nesta fase.`);
 }
 /* 3 pistas por pergunta: cada pista = 1 dica; depois da 3ª, a pergunta */
-function spawnClues(){const free=G.free,bx=G.boss;
+function ehPort(){return !!(G.fase&&G.fase.d==="port")}
+function spawnClues(){const free=G.free,bx=G.boss,n=ehPort()?NQ():3;
  const far=shuf(free.filter(([x,y])=>Math.abs(x-G.px)+Math.abs(y-G.py)>3&&!(x===bx.x&&y===bx.y)));
- const pts=[];for(const p of far){if(pts.every(q=>Math.abs(q[0]-p[0])+Math.abs(q[1]-p[1])>3))pts.push(p);if(pts.length===3)break}
- for(const p of far){if(pts.length>=3)break;if(!pts.includes(p))pts.push(p)}
- G.clues=pts.map(p=>({x:p[0],y:p[1],got:false}));G.dk=0;G.dicas=montarDicas(G.qs[G.ord],G.ord);hud()}
+ const pts=[];for(const p of far){if(pts.every(q=>Math.abs(q[0]-p[0])+Math.abs(q[1]-p[1])>3))pts.push(p);if(pts.length===n)break}
+ for(const p of far){if(pts.length>=n)break;if(!pts.includes(p))pts.push(p)}
+ G.clues=pts.map(p=>({x:p[0],y:p[1],got:false}));G.dk=0;G.pronta=false;G.dicas=ehPort()?[]:montarDicas(G.qs[G.ord],G.ord);hud()}
 function curioDica(d){const L2=(typeof CURIO!=="undefined"&&CURIO[d])||[];if(!L2.length)return "Leia com atenção cada alternativa: a Cebraspe esconde o erro em um detalhe.";
  const k="dicaIdx_"+d,i=st.get(k,Math.floor(Math.random()*L2.length))%L2.length;st.set(k,i+1);const c=L2[i];return `💡 Você sabia que ${c.s} ${c.p}`}
 function montarDicas(q,ord){
  if(q.src==="caso"&&q.ctx&&q.ctx.length>=3)return q.ctx.slice(0,3).map(t=>"🔎 "+t);
- if(G.partes){const ps=G.partes,n=ps.length,ch0=ps.slice(Math.floor(ord*n/NQ()),Math.floor((ord+1)*n/NQ())),ch=ch0.length?ch0:[ps[Math.min(n-1,Math.floor(ord*n/NQ()))]],k=ch.length,out=[];for(let j=0;j<3;j++){const t=ch.slice(Math.ceil(j*k/3),Math.ceil((j+1)*k/3)).join(" ");out.push(t?"📖 Trecho do texto: "+t:curioDica("port"))}return out}
- const out=[`📁 Assunto: ${TEMAS[q.d].nome}${q.tt?" · "+q.tt:""}. ${curioDica(q.d)}`,curioDica(q.d)];
- const erradas=[0,1,2,3,4].filter(k=>k!==q.c),el=erradas[Math.floor(Math.random()*4)];q.elim=el;
- out.push(`🧩 Pista decisiva: a alternativa "${q.o[el]}" está ERRADA.${q.e?" "+q.e[el]:""}`);return out}
-function hud(){$("#hCase").textContent=G.misto?`MISTO F${G.mistoN+1}`:`FASE ${G.fase.n}`;$("#hLife").textContent="♥".repeat(Math.max(0,G.vidas))+"♡".repeat(3-Math.max(0,G.vidas));$("#hClue").textContent=`PERG ${Math.min(G.ord+1,NQ())}/${NQ()} · DICA ${G.dk||0}/3`;$("#hPts").textContent=`${G.res.filter(r=>r).length} ACERTOS`;$("#hLupa").textContent=G.lupa?"🔍x1":"🔍x0";$("#qLife").textContent=$("#hLife").textContent}
+ const tok=t=>(t||"").toLowerCase().replace(/<[^>]+>/g," ").normalize("NFD").replace(/[\u0300-\u036f]/g,"").match(/[a-z0-9º]{5,}/g)||[];
+ const stem=new Set(tok(q.q)),chave=tok(q.o[q.c]).filter(w=>!stem.has(w));
+ const boas=[];if(q.e)q.e.forEach((t,j)=>{if(j===q.c||/^correto|^certa/i.test(t))return;const w=tok(t);if(chave.some(x=>w.includes(x)))return;boas.push("📝 Anotação da investigação: "+t)});
+ const out=[`📁 Assunto do caso: ${TEMAS[q.d].nome}${q.tt?" · "+q.tt:""}.`+(boas.length?" "+boas.shift():"")];
+ while(out.length<3)out.push(boas.length?boas.shift():curioDica(q.d));
+ return out}
+function hud(){$("#hCase").textContent=G.misto?`MISTO F${G.mistoN+1}`:`FASE ${G.fase.n}`;$("#hLife").textContent="♥".repeat(Math.max(0,G.vidas))+"♡".repeat(3-Math.max(0,G.vidas));$("#hClue").textContent=ehPort()?`PISTAS ${G.got}/${NQ()}`:`PERG ${Math.min(G.ord+1,NQ())}/${NQ()} · DICA ${G.dk||0}/3`;$("#hPts").textContent=`${G.res.filter(r=>r).length} ACERTOS`;$("#hLupa").textContent=G.lupa?"🔍x1":"🔍x0";$("#qLife").textContent=$("#hLife").textContent}
 const blocked=(x,y)=>x<0||y<0||y>=G.map.length||x>=G.map[0].length||!WALK.has(G.map[y][x])||(G.boss&&G.boss.x===x&&G.boss.y===y);
 function move(dx,dy){if(G.busy)return;if(dx)G.dir=dx;const nx=G.px+dx,ny=G.py+dy;if(blocked(nx,ny))return;G.px=nx;G.py=ny;G.frame^=1;SFX.step();
  const cl=G.clues.find(c=>!c.got&&c.x===nx&&c.y===ny);if(cl)collect(cl)}
@@ -531,11 +538,17 @@ function act(){if(dlgOpen()){nextDialog();return}if(G.busy)return;
  const cl=G.clues.find(c=>!c.got&&near(c));if(cl){collect(cl);return}
  if(near(G.boss)){talkBoss();return}
  toast("Nada aqui. Procure os ❗ ou "+(G.fase.cena==="escola"?"a professora.":"o delegado."))}
-function collect(cl){cl.got=true;G.got++;G.dk++;hud();SFX.clue();const t=G.dicas[G.dk-1];G.dicaTxt.push(t);
- showDialog(`Dica ${G.dk}/3 · Pergunta ${G.ord+1}/${NQ()}`,t+(G.dk<3?`  (Faltam ${3-G.dk} pista(s) para a pergunta.)`:"  Agora, a PERGUNTA!"),()=>{if(G.dk>=3){musicStop();question()}})}
-function talkBoss(){const prof=G.fase.cena==="escola";
- if(G.res.length<NQ()){showDialog(prof?"Professora":"Delegado",`Ainda faltam ${NQ()-G.res.length} pergunta(s), ${G.nome}. Ache as pistas ❗ para liberar a próxima!`);return}
- const ac=G.res.filter(r=>r).length;showDialog(prof?"Professora":"Delegado",ac>=4?"Excelente trabalho! Fase concluída.":"Fase concluída! Revise os erros para ir ainda melhor.",()=>{musicStop();endFase(true)})}
+function collect(cl){cl.got=true;G.got++;SFX.clue();
+ if(ehPort()){const q=G.qs[G.ord];const ps=G.partes,n=ps?ps.length:0,c0=ps?ps.slice(Math.floor(G.ord*n/NQ()),Math.floor((G.ord+1)*n/NQ())):[],parte=ps?(c0.length?c0:[ps[Math.min(n-1,Math.floor(G.ord*n/NQ()))]]).join(" "):null;hud();
+  showDialog(`Pista ${G.got}/${NQ()}`,parte?`📖 Trecho do texto: ${parte}`:`Questão de Língua Portuguesa${q.tt?" sobre "+q.tt.toLowerCase():""}. Vamos lá!`,()=>{musicStop();question()});return}
+ G.dk++;hud();const t=G.dicas[G.dk-1];G.dicaTxt.push(t);const prof="o delegado";
+ if(G.dk>=3)G.pronta=true;
+ showDialog(`Dica ${G.dk}/3 · Pergunta ${G.ord+1}/${NQ()}`,t+(G.dk<3?`  (Faltam ${3-G.dk} pista(s).)`:`  Você juntou as 3 dicas! Vá falar com ${prof} para responder a pergunta.`))}
+function talkBoss(){const prof=G.fase.cena==="escola",quem=prof?"Professora":"Delegado";
+ if(G.res.length>=NQ()){const ac=G.res.filter(r=>r).length;showDialog(quem,ac>=4?"Excelente trabalho! Fase concluída.":"Fase concluída! Revise os erros para ir ainda melhor.",()=>{musicStop();endFase(true)});return}
+ if(ehPort()){showDialog(quem,`Ainda faltam ${NQ()-G.res.length} pista(s) ❗ na sala, ${G.nome}. Cada pista é uma pergunta.`);return}
+ if(!G.pronta){showDialog(quem,`Ainda faltam ${3-G.dk} pista(s) ❗, ${G.nome}. Junte as 3 dicas e volte aqui para a pergunta.`);return}
+ showDialog(quem,`Muito bem, ${G.nome}. Com essas 3 dicas, responda:`,()=>{musicStop();question()})}
 function resumoPistas(){const ac=G.res.filter(r=>r).length;let t=`Pergunta ${Math.min(G.ord+1,NQ())}/${NQ()} · Dicas: ${G.dk||0}/3 · Acertos: ${ac} · Vidas: ${G.vidas}.`;
  if(G.dicas&&G.dk)t+=" Dicas desta pergunta: "+G.dicas.slice(0,G.dk).join(" | ");return t}
 /* diálogo máquina de escrever */
@@ -586,10 +599,10 @@ function question(){const q=G.qs[G.ord];answered=false;gone=[];
  $("#qTit").textContent=q.tx?"📖 LEITURA":q.src==="caso"?"📁 "+q.tt.toUpperCase():"📝 QUESTÃO";
  let ctx="";
  if(q.tx)ctx=`<div class="clue" style="border-left-color:#8a1d1b">${TXT[q.tx]}</div>`;
- else if(q.ctx)ctx=q.ctx.map((p,k)=>`<div class="clue">🔎 ${p}</div>`).join("");
+ else if(!ehPort()&&G.dicas&&G.dicas.length)ctx=G.dicas.map(p=>`<div class="clue">${p}</div>`).join("");else if(q.ctx)ctx=q.ctx.map((p,k)=>`<div class="clue">🔎 ${p}</div>`).join("");
  $("#qClues").innerHTML=ctx;
  $("#qText").innerHTML=`<b>${q.q}</b>`;
- $("#qOpts").innerHTML=q.o.map((t,k)=>`<button class="opt ${k===q.elim?"gone":""}" data-k="${k}" ${k===q.elim?"disabled":""}><span class="L">${L[k]}</span><span>${t}</span></button>`).join("");
+ $("#qOpts").innerHTML=q.o.map((t,k)=>`<button class="opt" data-k="${k}"><span class="L">${L[k]}</span><span>${t}</span></button>`).join("");
  $("#qRes").innerHTML="";$("#lupaBtn").style.display=G.lupa?"":"none";hud();go("sQ");SFX.open();
 }
 $("#qOpts").onclick=e=>{const b=e.target.closest(".opt");if(!b||answered||b.disabled)return;answer(+b.dataset.k)};
@@ -600,13 +613,13 @@ function answer(k){answered=true;const q=G.qs[G.ord],ok=k===q.c;
  $("#lupaBtn").style.display="none";if(!ok)G.vidas--;G.res.push(ok);G.hist=G.hist||[];G.hist.push({q,ok,pick:k});
  const seen=st.get("seenQ",{});seen[q.id]=Date.now();st.set("seenQ",seen);
  setTimeout(()=>{ok?SFX.ok():SFX.bad();SFX.stamp()},80);
- const dead=G.vidas<=0,last=G.ord===NQ()-1;
+ const dead=G.vidas<=0,last=G.ord===NQ()-1;G.pronta=false;
  const expl=q.e?`<ul class="ex">${q.o.map((t,j)=>`<li><b class="${j===q.c?"c":"w"}">${L[j]} ${j===q.c?"✔":"✘"}</b> ${q.e[j]}</li>`).join("")}</ul>`:`<div style="margin-top:6px">📌 ${q.ex}</div>`;
  $("#qRes").innerHTML=`<div class="stamp ${ok?"ok":"bad"}">${ok?"ACERTOU!":"ERROU!"}</div>
  <div class="win">${ok?"":`<div style="color:#ffb3b0">Você marcou ${L[k]}. O certo é <b style="color:#9dffb3">${L[q.c]}</b>: ${q.o[q.c]}</div>`}${expl}</div>
- <div class="row" style="margin-top:10px"><button class="btn px" id="nextBtn">${dead?"FASE PERDIDA ▶":last?"FALAR COM "+(G.fase.cena==="escola"?"A PROFESSORA":"O DELEGADO")+" ▶":"VOLTAR À CENA ▶"}</button></div>`;
+ <div class="row" style="margin-top:10px"><button class="btn px" id="nextBtn">${dead?"FASE PERDIDA ▶":last?(ehPort()?"FALAR COM A PROFESSORA ▶":"FECHAR O CASO ▶"):"VOLTAR À CENA ▶"}</button></div>`;
  hud();
- $("#nextBtn").onclick=()=>{if(dead){endFase(false);return}G.ord++;go("sGame");musicStart();if(last){G.clues=[];G.dk=0;hud();showDialog("Rádio",`Todas as perguntas resolvidas! Vá até ${G.fase.cena==="escola"?"a professora":"o delegado"} para fechar a fase.`)}else{spawnClues();showDialog("Rádio",`Novas 3 pistas ❗ apareceram no local. Junte as dicas para a pergunta ${G.ord+1}/${NQ()}.`)}};
+ $("#nextBtn").onclick=()=>{if(dead){endFase(false);return}G.ord++;if(last&&!ehPort()){musicStop();endFase(true);return}go("sGame");musicStart();if(ehPort()){if(last)showDialog("Rádio","Todas as pistas resolvidas! Vá até a professora para fechar a fase.");return}spawnClues();showDialog("Delegado",`Próxima pergunta (${G.ord+1}/${NQ()}): ache mais 3 pistas ❗ com as dicas e volte aqui.`)};
  setTimeout(()=>$("#qRes").scrollIntoView({behavior:"smooth",block:"start"}),150);
 }
 
@@ -653,7 +666,7 @@ document.addEventListener("keydown",e=>{if(e.target.tagName==="INPUT")return;con
  if(k==="m"){setSnd(!SND.on);toast(SND.on?"Som ligado":"Som desligado");if(SND.on&&$("#sGame").classList.contains("on"))musicStart()}
  if(k==="p"&&$("#sGame").classList.contains("on")){if(dlgOpen())nextDialog();else showDialog("Status",resumoPistas())}
  if($("#sIntro").classList.contains("on")&&(k==="enter"||k===" ")){e.preventDefault();startScene();return}
- if($("#sQ").classList.contains("on")){const i="abcde".indexOf(k);if(i>=0&&!answered){const b=document.querySelector(`.opt[data-k="${i}"]`);if(b&&!b.disabled)answer(i)}if(k==="l")$("#lupaBtn").click();if((k==="enter"||k===" ")&&answered){e.preventDefault();const n=$("#nextBtn");if(n)n.click()}}
+ /* respostas só com mouse/toque */
 });
 /* VOCÊ SABIA? — curiosidades que valem para o jogo e para a prova */
 const CURIO={
@@ -785,6 +798,13 @@ $("#sabiaBtn2").onclick=()=>{SFX.sel();curioVolta="sTitle";renderSabia()};
 
 $("#desBtn").onclick=function(){if(answered)return;if(!this.dataset.arm){this.dataset.arm=1;this.textContent="CERTEZA? TOQUE DE NOVO";setTimeout(()=>{this.dataset.arm="";this.textContent="🏳️ DESISTIR"},2500);return}this.dataset.arm="";this.textContent="🏳️ DESISTIR";musicStop();renderTitle();go("sTitle")};
 ;(function(){try{const n=JSON.parse(localStorage.getItem("estudosPCPE:nome")||"null");const i=document.getElementById("nome");if(n&&i&&!i.value)i.value=n}catch(e){}})();
+
+$("#voltarG").onclick=function(){const on=id=>$("#"+id).classList.contains("on");SFX.sel();
+ if(on("sTitle")){location.href="index.html";return}
+ if(on("sTema")){go("sTitle");renderTitle();return}
+ if(on("sGame")||on("sQ")){if(!this.dataset.arm){this.dataset.arm=1;this.textContent="SAIR DA FASE?";setTimeout(()=>{this.dataset.arm="";this.textContent="◀ VOLTAR"},2500);return}this.dataset.arm="";this.textContent="◀ VOLTAR";musicStop();if(dlgOpen())nextDialog();if(G.tema&&!G.misto&&FASES[G.tema])renderMapa();else{renderTemas();go("sTema")}return}
+ if(on("sIntro")){if(G.tema&&!G.misto&&FASES[G.tema])renderMapa();else{renderTemas();go("sTema")}return}
+ renderTemas();go("sTema")};
 renderTitle();
 </script>
 </body>

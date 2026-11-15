@@ -763,7 +763,7 @@ async function askQuestion(){
  vP.then(v=>voiceDone(v,9000)).then(()=>{if(G.locked||G.over||curQ()!==q)return;const sus=["suspense_1","suspense_2","suspense_3","suspense_4","suspense_5","suspense_6"].filter(has);if(sus.length)playFile(sus[Math.min(sus.length-1,(q.lv-1)*2+rnd(2))],{chan:"music",vol:.35,loop:true})});
 }
 $("#opts").onclick=e=>{const b=e.target.closest(".opt");if(!b||G.locked||b.disabled)return;chooseOpt(+b.dataset.k)};
-document.addEventListener("keydown",e=>{if(!$("#game").classList.contains("on")||G.locked)return;if($("#ov").classList.contains("on")){if(e.key==="Enter"){const y=$("#yesBtn");if(y)y.click()}if(e.key==="Escape")closeModal();return}const n=+e.key;if(n>=1&&n<=4&&!G.gone.includes(n-1))chooseOpt(n-1)});
+document.addEventListener("keydown",e=>{if(!$("#game").classList.contains("on")||G.locked)return;if($("#ov").classList.contains("on")){if(e.key==="Escape")closeModal();return}/* respostas só com mouse/toque */});
 function chooseOpt(k){
  G.sel=k;document.querySelectorAll(".opt").forEach(o=>o.classList.toggle("sel",+o.dataset.k===k));
  if(has("selecao"))playFile("selecao",{chan:"sfx"});else SYN.sel();
